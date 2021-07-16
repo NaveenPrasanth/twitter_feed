@@ -7,6 +7,9 @@ db = SQLAlchemy(FLASK_APP)
 
 
 class Tweet(db.Model):
+    """
+        Class to model Tweets
+    """
     __tablename__ = 'tweet'
     id = db.Column(db.String(80), primary_key=True)
     text = db.Column(db.String(80), nullable=False)
@@ -15,6 +18,9 @@ class Tweet(db.Model):
 
 
 class User(db.Model):
+    """
+        Class to model the users. The newest tweet is held as reference to facilitate further pulls
+    """
     __tablename__ = 'user'
     user_id = db.Column(db.String(80), nullable=False, primary_key=True)
     username = db.Column(db.String(80), nullable=False)

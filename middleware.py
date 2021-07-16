@@ -1,28 +1,46 @@
 from database import *
 from datetime import datetime
+import tweet_service
 
 
 def create_user_if_none(username, user_id):
+    """
+        Create the user object in the db if not present
+        :param username: twitter username for the user
+        :param user_id: twitter user_id assigned to the user
+        :return: None
+    """
     user_obj = User.query.filter_by(user_id=user_id).first()
     if user_obj is None:
         user_obj = User(user_id=user_id, username=username)
         db.session.add(user_obj)
         db.session.commit()
-    return user_obj
 
 
-def persist_recent_tweets(recent_tweets, user_id):
+def get_persist_recent_tweets(user_id, twitter):
+    """
+        Gets the tweets from last fetched tweet as the reference and persists it in the db
+        :param user_id: twitter user_id assigned to the user
+        :param twitter: twitter oauth session object
+        :return: None
+    """
     user_obj = User.query.filter_by(user_id=user_id).first()
-    user_obj.latest_tweet_id = recent_tweets['meta']['newest_id']
-    for tweet in recent_tweets['data']:
-        created_at = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        tweet_obj = Tweet(id=tweet['id'], created_at=created_at, text=tweet['text'], user_id=user_obj.user_id)
-        db.session.add(tweet_obj)
-    db.session.commit()
+    recent_tweets = tweet_service.get_recent_tweets(user_id, twitter, user_obj.latest_tweet_id)
+    if 'newest_id' in recent_tweets['meta']:  # else no new tweets
+        user_obj.latest_tweet_id = recent_tweets['meta']['newest_id']
+        for tweet in recent_tweets['data'][::-1]:
+            created_at = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            tweet_obj = Tweet(id=tweet['id'], created_at=created_at, text=tweet['text'], user_id=user_obj.user_id)
+            db.session.add(tweet_obj)
+        db.session.commit()
 
 
 def get_all_tweets(user_id):
-    return [t.__dict__ for t in Tweet.query.filter_by(user_id=user_id)]
-
-
-
+    """
+        Gets all the tweets for a particular db in the inserted order(implicit created order)
+        :param user_id:
+        :return:  return list of tweet dict {created_at, tweet_text}
+    """
+    dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
+    keys_selected = ('text', 'created_at')
+    return [dict_filter(t.__dict__, keys_selected) for t in Tweet.query.filter_by(user_id=user_id)]

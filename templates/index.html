@@ -7,16 +7,9 @@
 {% endif %}
 <table style="width:100%">
   <!-- table header -->
-  {% if tweets_dict %}
-  <tr>
-     {% for key in tweets_dict[0] %}
-     <th> {{ key }} </th>
-     {% endfor %}
-  </tr>
-  {% endif %}
 
   <!-- table rows -->
-  {% for dict_item in tweets_dict %}
+  {% for dict_item in tweets_list %}
   <tr>
      {% for value in dict_item.values() %}
      <td> {{ value }} </td>

@@ -22,6 +22,10 @@ import middleware
 
 @FLASK_APP.route('/')
 def twitter_sign_in():
+    """
+        API to start twitter authentication and redirect to home page
+        :return: redirect to home page
+    """
     if not twitter.authorized:
         return redirect(url_for("twitter.login"))
     else:
@@ -30,13 +34,19 @@ def twitter_sign_in():
 
 @FLASK_APP.route('/home')
 def get_landing_page():
+    """
+        API to get, persist and display user tweets
+        :return: renders a webpage with list of user tweets
+    """
+    if not twitter.authorized:
+        return redirect(url_for("twitter.login"))
+
     resp = twitter.get("account/settings.json")
     assert resp.ok
     username = resp.json()["screen_name"]
     user_id = tweet_service.get_user_id_from_username(username, twitter)
-    user_obj = middleware.create_user_if_none(username, user_id)
-    recent_tweets = tweet_service.get_recent_tweets(user_id, twitter, user_obj.latest_tweet_id)
-    middleware.persist_recent_tweets(recent_tweets, user_id)
+    middleware.create_user_if_none(username, user_id)
+    middleware.get_persist_recent_tweets(user_id, twitter)
     tweets_list = middleware.get_all_tweets(user_id)
     return render_template('index.html', name=resp.json()["screen_name"], tweets_list=tweets_list)
 

@@ -5,15 +5,97 @@
 {% else %}
   <h1>Hello, World!</h1>
 {% endif %}
-<table style="width:100%">
-  <!-- table header -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-  <!-- table rows -->
-  {% for dict_item in tweets_list %}
-  <tr>
-     {% for value in dict_item.values() %}
-     <td> {{ value }} </td>
-     {% endfor %}
-  </tr>
-  {% endfor %}
-</table>
+<body onLoad="all_tweets()">
+    <input id="search_input" type="text" placeholder="Search.." name="search">
+    <button onclick="search_text()"> <i class="fa fa-search"></i></button>
+    <button onclick="all_tweets()"> <i class="fa fa-undo"></i></button>
+    <table class='table' id="DataTable" border="1">
+    </table>
+</body>
+<!-- The form -->
+
+
+<script>
+    const get = (url, callback) => {
+  var response_value = ""
+  fetch('http://'+window.location.hostname+':5000/'+url, { // Your GET endpoint
+    method: 'GET',
+    headers: {
+    }
+  }).then(
+    response => response.text() // if the response is a JSON object
+  ).then(
+    success => callback(success) // Handle the success response object
+  ).catch(
+    error => console.log(error) // Handle the error response object
+  );
+
+  return response_value
+};
+
+const search_text = () => {
+    var search_input = document.getElementById('search_input').value
+    get('search/'+search_input, search_text_callback)
+}
+
+const search_text_callback = (response_value) => {
+    console.log(response_value)
+<!--    var search_results = document.getElementById('search_results')-->
+<!--    search_results.textContent = JSON.stringify(JSON.parse(response_value));-->
+    $("#DataTable tr").remove();
+    buildHtmlTable('#DataTable', JSON.parse(response_value))
+}
+
+
+const all_tweets = () => {
+    get('all_tweets', all_tweets_callback)
+}
+
+const all_tweets_callback = (response_value) => {
+    console.log(response_value)
+    $("#DataTable tr").remove();
+    buildHtmlTable('#DataTable', JSON.parse(response_value))
+}
+
+function buildHtmlTable(selector, myList) {
+  var columns = addAllColumnHeaders(myList, selector);
+
+  for (var i = 0; i < myList.length; i++) {
+    var row$ = $('<tr/>');
+    for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+      var cellValue = myList[i][columns[colIndex]];
+      if (cellValue == null) cellValue = "";
+      row$.append($('<td/>').html(cellValue));
+    }
+    $(selector).append(row$);
+  }
+}
+
+// Adds a header row to the table and returns the set of columns.
+// Need to do union of keys from all records as some records may not contain
+// all records.
+function addAllColumnHeaders(myList, selector) {
+  var columnSet = [];
+  var headerTr$ = $('<tr/>');
+
+  for (var i = 0; i < myList.length; i++) {
+    var rowHash = myList[i];
+    for (var key in rowHash) {
+      if ($.inArray(key, columnSet) == -1) {
+        columnSet.push(key);
+        headerTr$.append($('<th/>').html(key));
+      }
+    }
+  }
+  $(selector).append(headerTr$);
+
+  return columnSet;
+}
+</script>

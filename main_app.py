@@ -1,9 +1,7 @@
 from flask import Flask, url_for, Response
 from flask import request, redirect
-from flask import render_template
+from flask import render_template, jsonify
 from flask_dance.contrib.twitter import make_twitter_blueprint, twitter
-import tweet_service
-
 FLASK_APP = Flask(__name__)
 
 # read api keys from config and set to app
@@ -41,14 +39,39 @@ def get_landing_page():
     if not twitter.authorized:
         return redirect(url_for("twitter.login"))
 
-    resp = twitter.get("account/settings.json")
-    assert resp.ok
-    username = resp.json()["screen_name"]
-    user_id = tweet_service.get_user_id_from_username(username, twitter)
+    username = twitter.token["screen_name"]
+    user_id = twitter.token['user_id']
     middleware.create_user_if_none(username, user_id)
     middleware.get_persist_recent_tweets(user_id, twitter)
+    return render_template('index.html', name=username)
+
+
+@FLASK_APP.route('/all_tweets')
+def get_all_tweets():
+    """
+        API to get, persist and display user tweets
+        :return: renders a webpage with list of user tweets
+    """
+    if not twitter.authorized:
+        return redirect(url_for("twitter.login"))
+
+    user_id = twitter.token['user_id']
     tweets_list = middleware.get_all_tweets(user_id)
-    return render_template('index.html', name=resp.json()["screen_name"], tweets_list=tweets_list)
+    return jsonify(tweets_list)
+
+
+@FLASK_APP.route('/search/<search_string>')
+def search_tweets(search_string):
+    """
+        API to search for a substring in user tweets
+        :return: renders a webpage with list of user tweets based on search string
+    """
+    if not twitter.authorized:
+        return redirect(url_for("twitter.login"))
+
+    user_id = twitter.token['user_id']
+    tweets_list = middleware.search_tweets(user_id, search_string)
+    return jsonify(tweets_list)
 
 
 if __name__ == '__main__':

@@ -2,6 +2,8 @@ from database import *
 from datetime import datetime
 import tweet_service
 
+dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
+keys_selected = ('text', 'created_at')
 
 def create_user_if_none(username, user_id):
     """
@@ -41,6 +43,9 @@ def get_all_tweets(user_id):
         :param user_id:
         :return:  return list of tweet dict {created_at, tweet_text}
     """
-    dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
-    keys_selected = ('text', 'created_at')
     return [dict_filter(t.__dict__, keys_selected) for t in Tweet.query.filter_by(user_id=user_id)]
+
+
+def search_tweets(user_id, search_string):
+    search_string = '%'+search_string+'%'
+    return [dict_filter(t.__dict__, keys_selected) for t in Tweet.query.filter_by(user_id=user_id).filter(Tweet.text.ilike(search_string)).all()]

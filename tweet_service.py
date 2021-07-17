@@ -1,3 +1,5 @@
+import requests
+
 
 def get_user_id_from_username(username, twitter):
     """
@@ -18,10 +20,19 @@ def get_recent_tweets(user_id, twitter, since_id):
         :param since_id: the last tweet id that is fetched.
         :return: list of latest tweets in reverse chronological order
     """
+    max_results = '&max_results=100'
     if since_id is not None:
-        max_results = ''
         since_id = '&since_id='+since_id
     else:
-        max_results = '&max_results=100'
         since_id = ''
-    return twitter.get("https://api.twitter.com/2/users/"+user_id+"/tweets?tweet.fields=created_at,id,text"+since_id+max_results).json()
+    return twitter.get("https://api.twitter.com/2/users/"+user_id+"/tweets?tweet.fields=created_at,id,text"+since_id+max_results,
+                       headers={"Authorization":"Bearer AAAAAAAAAAAAAAAAAAAAAMrzRgEAAAAAYave06cnl09yfGOmt5QshMUyba0%3DXgNhDryDAs2NSVrcxbVriHhYFOLcqZzKrOZpod2Rtj8RGPPzMH"}).json()
+
+
+# def get_timeline_for_user_with_bearer_token(user_id, bearer_token, since_id):
+#     max_results = '&max_results=100'
+#     if since_id is not None:
+#         since_id = '&since_id='+since_id
+#     else:
+#         since_id = ''
+#     requests.get("https://api.twitter.com/2/users/"+user_id+"/tweets?tweet.fields=created_at,id,text"+since_id+max_results, headers={"Authorization":"Bearer "+bearer_token}).json()

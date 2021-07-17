@@ -5,6 +5,7 @@ from datetime import datetime
 import tweet_service
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from sqlalchemy import desc
+import requests
 
 dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
 keys_selected = ('text', 'created_at')
@@ -14,7 +15,7 @@ def init_db():
     db.create_all()
 
 
-def create_user_if_none(username, user_id, blueprint):
+def create_user_if_none(username, user_id):
     """
         Create the user object in the db if not present
         :param username: twitter username for the user
@@ -27,7 +28,6 @@ def create_user_if_none(username, user_id, blueprint):
         db.session.add(user_obj)
         db.session.commit()
     login_user(user_obj)
-    blueprint.storage = SQLAlchemyStorage(OAuth, db.session, user=current_user)
 
 
 def get_persist_recent_tweets(user_id, twitter):
@@ -89,6 +89,7 @@ def __sort_tweets(objects, sort_order):
         raise ValueError('Invalid sort type')
 
 
-def sync_tweets_with_db(blueprint, twitter):
+def sync_tweets_with_db():
     all_users = User.query.all()
-    get_persist_recent_tweets(all_users[0].id, twitter)
+    for user in all_users:
+        get_persist_recent_tweets(user.id, requests)

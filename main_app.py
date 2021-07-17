@@ -3,6 +3,11 @@ from flask import request, redirect
 from flask import render_template, jsonify
 from flask_dance.contrib.twitter import make_twitter_blueprint, twitter
 from flask_login import LoginManager
+from loguru import logger
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
+
+logger.add("app_{time}.log")
 
 FLASK_APP = Flask(__name__)
 
@@ -16,19 +21,29 @@ blueprint = make_twitter_blueprint(
     api_secret=FLASK_APP.config['API_SECRET_KEY'],
 )
 FLASK_APP.register_blueprint(blueprint, url_prefix="/login")
+
 login_manager = LoginManager()
 login_manager.init_app(FLASK_APP)
+
 import middleware
 from database import *
 
 
-@FLASK_APP.cli.command()
 def sync_tweets_with_db():
     """
         Sync tweets with db
     :return:
     """
-    middleware.sync_tweets_with_db(blueprint, twitter)
+    logger.info("Scheduled tweet pull initiated")
+    middleware.sync_tweets_with_db()
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=sync_tweets_with_db, trigger="interval", seconds=30)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
 
 
 @login_manager.user_loader
@@ -58,10 +73,10 @@ def get_landing_page():
     middleware.init_db()
     if not twitter.authorized:
         return redirect(url_for("twitter_sign_in"))
-
     username = twitter.token["screen_name"]
+    logger.info('Fetching Tweets for user: '+str(username))
     user_id = twitter.token['user_id']
-    middleware.create_user_if_none(username, user_id, blueprint)
+    middleware.create_user_if_none(username, user_id)
     middleware.get_persist_recent_tweets(user_id, twitter)
     return render_template('index.html', name=username)
 

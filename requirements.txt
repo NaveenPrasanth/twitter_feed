@@ -1,3 +1,5 @@
+apscheduler
+loguru
 sqlalchemy
 Flask==1.0.2
 flask-dance==2.0.0
@@ -10,3 +12,4 @@ Jinja2==2.10
 uWSGI==2.0.17.1
 Werkzeug==0.16.0
 SQLAlchemy-Utils
+flask_caching

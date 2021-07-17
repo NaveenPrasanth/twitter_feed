@@ -64,16 +64,20 @@ def search_tweets(user_id, search_string):
 
 
 def filter_sort_tweets(user_id, from_date, to_date, sort_order):
-    if from_date is not None and to_date is not None:
-        from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
-        to_date = datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
-        filtered = Tweet.query.filter_by(user_id=user_id).filter(Tweet.created_at.between(from_date, to_date))
 
-    if filtered is not None:
-        return [dict_filter(t.__dict__, keys_selected) for t in __sort_tweets(filtered, sort_order)]
+    if from_date == '':
+        from_date = datetime.min
     else:
-        filtered = Tweet.query.filter_by(user_id=user_id).all()
-        return [dict_filter(t.__dict__, keys_selected) for t in __sort_tweets(filtered, sort_order)]
+        from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S'
+                                      )
+    if to_date == '':
+        to_date = datetime.now()
+    else:
+        to_date = datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
+
+    filtered = Tweet.query.filter_by(user_id=user_id).filter(Tweet.created_at.between(from_date, to_date))
+
+    return [dict_filter(t.__dict__, keys_selected) for t in __sort_tweets(filtered, sort_order)]
 
 
 def __sort_tweets(objects, sort_order):

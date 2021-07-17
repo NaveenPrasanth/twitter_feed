@@ -69,7 +69,7 @@ $(function () {
 
     const get = (url, callback) => {
   var response_value = ""
-  fetch('http://'+window.location.hostname+'/'+url, { // Your GET endpoint
+  fetch('http://'+window.location.hostname+':5000/'+url, { // Your GET endpoint
     method: 'GET',
     headers: {
     }
@@ -88,7 +88,7 @@ const filter_sort = () => {
     var from_date = document.getElementById('from_date').value
     var to_date = document.getElementById('to_date').value
     var sort_order = document.getElementById('sort_order').value
-    get('filter/'+from_date+'/'+to_date+'/'+sort_order, filter_sort_callback)
+    get('filter?from_date='+from_date+'&to_date='+to_date+'&sort_order='+sort_order, filter_sort_callback)
 }
 
 const filter_sort_callback = (response_value) => {

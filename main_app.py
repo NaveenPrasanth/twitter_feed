@@ -91,13 +91,15 @@ def search_tweets(search_string):
     return jsonify(tweets_list)
 
 
-@FLASK_APP.route('/filter/<from_date>/<to_date>/<sort_order>')
-def filter_sort_tweets(from_date, to_date, sort_order):
+@FLASK_APP.route('/filter')
+def filter_sort_tweets():
     """
         API to search for a substring in user tweets
         :return: renders a webpage with list of user tweets based on search string
     """
-
+    from_date = request.args.get("from_date")
+    to_date = request.args.get("to_date")
+    sort_order = request.args.get("sort_order")
     user_id = twitter.token['user_id']
     tweets_list = middleware.filter_sort_tweets(user_id, from_date, to_date, sort_order)
     return jsonify(tweets_list)

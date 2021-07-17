@@ -1,0 +1,4 @@
+# rename this file to config.txt and put relevant keys below for the app to work. Delete this line.
+API_KEY="dummy"
+API_SECRET_KEY="dummy_secret"
+APP_KEY="SECRETKEY"

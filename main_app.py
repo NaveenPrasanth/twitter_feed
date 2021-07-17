@@ -19,7 +19,7 @@ FLASK_APP.register_blueprint(blueprint, url_prefix="/login")
 login_manager = LoginManager()
 login_manager.init_app(FLASK_APP)
 import middleware
-from database import User
+from database import *
 
 
 @FLASK_APP.cli.command()
@@ -42,6 +42,7 @@ def twitter_sign_in():
         API to start twitter authentication and redirect to home page
         :return: redirect to home page
     """
+    middleware.init_db()
     if not twitter.authorized:
         return redirect(url_for("twitter.login"))
     else:
@@ -54,8 +55,9 @@ def get_landing_page():
         API to get, persist and display user tweets
         :return: renders a webpage with list of user tweets
     """
+    middleware.init_db()
     if not twitter.authorized:
-        return redirect(url_for("twitter.login"))
+        return redirect(url_for("twitter_sign_in"))
 
     username = twitter.token["screen_name"]
     user_id = twitter.token['user_id']
@@ -71,7 +73,7 @@ def get_all_tweets():
         :return: renders a webpage with list of user tweets
     """
     if not twitter.authorized:
-        return redirect(url_for("twitter.login"))
+        return redirect(url_for("twitter_sign_in"))
 
     user_id = twitter.token['user_id']
     tweets_list = middleware.get_all_tweets(user_id)

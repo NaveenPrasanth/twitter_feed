@@ -10,6 +10,10 @@ dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
 keys_selected = ('text', 'created_at')
 
 
+def init_db():
+    db.create_all()
+
+
 def create_user_if_none(username, user_id, blueprint):
     """
         Create the user object in the db if not present

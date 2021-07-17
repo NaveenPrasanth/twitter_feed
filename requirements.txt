@@ -1,3 +1,5 @@
 flask
 flask-dance=2.0.0
 Flask-SQLAlchemy
+flask-login
+flask-crontab

@@ -2,6 +2,8 @@ from flask import Flask, url_for, Response
 from flask import request, redirect
 from flask import render_template, jsonify
 from flask_dance.contrib.twitter import make_twitter_blueprint, twitter
+from flask_login import LoginManager
+
 FLASK_APP = Flask(__name__)
 
 # read api keys from config and set to app
@@ -14,8 +16,24 @@ blueprint = make_twitter_blueprint(
     api_secret=FLASK_APP.config['API_SECRET_KEY'],
 )
 FLASK_APP.register_blueprint(blueprint, url_prefix="/login")
-
+login_manager = LoginManager()
+login_manager.init_app(FLASK_APP)
 import middleware
+from database import User
+
+
+@FLASK_APP.cli.command()
+def sync_tweets_with_db():
+    """
+        Sync tweets with db
+    :return:
+    """
+    middleware.sync_tweets_with_db(blueprint, twitter)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=user_id).first()
 
 
 @FLASK_APP.route('/')
@@ -41,7 +59,7 @@ def get_landing_page():
 
     username = twitter.token["screen_name"]
     user_id = twitter.token['user_id']
-    middleware.create_user_if_none(username, user_id)
+    middleware.create_user_if_none(username, user_id, blueprint)
     middleware.get_persist_recent_tweets(user_id, twitter)
     return render_template('index.html', name=username)
 

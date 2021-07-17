@@ -84,11 +84,20 @@ def search_tweets(search_string):
         API to search for a substring in user tweets
         :return: renders a webpage with list of user tweets based on search string
     """
-    if not twitter.authorized:
-        return redirect(url_for("twitter.login"))
-
     user_id = twitter.token['user_id']
     tweets_list = middleware.search_tweets(user_id, search_string)
+    return jsonify(tweets_list)
+
+
+@FLASK_APP.route('/filter/<from_date>/<to_date>/<sort_order>')
+def filter_sort_tweets(from_date, to_date, sort_order):
+    """
+        API to search for a substring in user tweets
+        :return: renders a webpage with list of user tweets based on search string
+    """
+
+    user_id = twitter.token['user_id']
+    tweets_list = middleware.filter_sort_tweets(user_id, from_date, to_date, sort_order)
     return jsonify(tweets_list)
 
 

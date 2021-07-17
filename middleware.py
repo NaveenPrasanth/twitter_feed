@@ -4,6 +4,7 @@ from database import *
 from datetime import datetime
 import tweet_service
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
+from sqlalchemy import desc
 
 dict_filter = lambda x, y: dict([(i, x[i]) for i in x if i in set(y)])
 keys_selected = ('text', 'created_at')
@@ -53,8 +54,31 @@ def get_all_tweets(user_id):
 
 
 def search_tweets(user_id, search_string):
-    search_string = '%'+search_string+'%'
-    return [dict_filter(t.__dict__, keys_selected) for t in Tweet.query.filter_by(user_id=user_id).filter(Tweet.text.ilike(search_string)).all()]
+    search_string = '%' + search_string + '%'
+    return [dict_filter(t.__dict__, keys_selected) for t in
+            Tweet.query.filter_by(user_id=user_id).filter(Tweet.text.ilike(search_string)).all()]
+
+
+def filter_sort_tweets(user_id, from_date, to_date, sort_order):
+    if from_date is not None and to_date is not None:
+        from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
+        to_date = datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
+        filtered = Tweet.query.filter_by(user_id=user_id).filter(Tweet.created_at.between(from_date, to_date))
+
+    if filtered is not None:
+        return [dict_filter(t.__dict__, keys_selected) for t in __sort_tweets(filtered, sort_order)]
+    else:
+        filtered = Tweet.query.filter_by(user_id=user_id).all()
+        return [dict_filter(t.__dict__, keys_selected) for t in __sort_tweets(filtered, sort_order)]
+
+
+def __sort_tweets(objects, sort_order):
+    if sort_order == 'desc':
+        return objects.order_by(desc(Tweet.created_at)).all()
+    elif sort_order == 'asc':
+        return objects.order_by(Tweet.created_at).all()
+    else:
+        raise ValueError('Invalid sort type')
 
 
 def sync_tweets_with_db(blueprint, twitter):

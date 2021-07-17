@@ -39,7 +39,7 @@ def sync_tweets_with_db():
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=sync_tweets_with_db, trigger="interval", seconds=30)
+scheduler.add_job(func=sync_tweets_with_db, trigger="interval", seconds=300)
 scheduler.start()
 
 # Shut down the scheduler when exiting the app

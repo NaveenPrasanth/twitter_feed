@@ -2,3 +2,4 @@
 API_KEY="dummy"
 API_SECRET_KEY="dummy_secret"
 APP_KEY="SECRETKEY"
+BEARER_TOKEN="dummy"

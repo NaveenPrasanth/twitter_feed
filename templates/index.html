@@ -69,7 +69,7 @@ $(function () {
 
     const get = (url, callback) => {
   var response_value = ""
-  fetch('http://'+window.location.hostname+'/'+url, { // Your GET endpoint
+  fetch('http://'+window.location.hostname+':5000/'+url, { // Your GET endpoint
     method: 'GET',
     headers: {
     }

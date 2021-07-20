@@ -92,8 +92,8 @@ def filter_sort_tweets(user_id, from_date, to_date, sort_order):
         if from_date == '':
             from_date = datetime.min
         else:
-            from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S'
-                                          )
+            from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
+
         if to_date == '':
             to_date = datetime.now()
         else:

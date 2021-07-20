@@ -13,3 +13,4 @@ uWSGI==2.0.17.1
 Werkzeug==0.16.0
 SQLAlchemy-Utils
 flask_caching
+pytest
